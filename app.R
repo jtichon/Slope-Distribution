@@ -1,9 +1,17 @@
+###
+# TO DO: Fix symbols in equation and in second plot title
+###
+
 library(shiny)
 library(tidyverse)
-
+library(latex2exp)
  #totalSlopes <-c()
 
 ui <- fluidPage(
+  
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
+  ),
   
 # Numeric Inputs for Model Parameters  
   fluidRow(
@@ -11,42 +19,32 @@ ui <- fluidPage(
     # Beta0 between 0 and 10 
     column(4,
            numericInput("b0", HTML("&beta;<sub>0</sub>:"), value = 2,
-                        min = 0, max = 10, step = 1)
+                        min = -100, max = 100, step = 0.5)
            ),
     
     # Beta1 between 0 and 10
     column(4,
-           numericInput("b1", HTML("&beta;<sub>1</sub>:"), value = 5,
-                        min = 0, max = 10, step = 1)
+           numericInput("b1", HTML("&beta;<sub>1</sub>:"), value = 2,
+                        min = -100, max = 100, step = 0.5)
            ),
     
     # sigma between 0.5 and 4
     column(4,
            numericInput("sigma", HTML("&sigma;<sub>&epsilon;</sub>:"), value =1,
-                        min = 0.5, max = 4, step = 0.5)
+                        min = 0.5, max = 20, step = 0.5)
            )
     
   ),
+ 
+tags$div(class = "button", 
+  # Big simulate button
+  actionButton("makepop", "Simulate")),
   
-  # Population Picture
-  sidebarLayout( 
-    sidebarPanel(
-      actionButton("makepop", "Simulate")
-    ),
-    
-    mainPanel(
-      
-      #Equation of least-squares line
-      textOutput("equation"),
-      plotOutput("population")
-      
-      ) 
-    
-    ),
-  
-  # # Big Simulate Button
-  # 
-  # actionButton("sample", "Simulate Samples"),
+tags$div(class = "equation",
+  # Equation of least-squares line
+  textOutput("equation")),
+
+
   
   # Histogram Picture
  
@@ -65,12 +63,14 @@ ui <- fluidPage(
 server <- function(input, output){
   
   # Make equation of the line
+  
+observeEvent(input$makepop, { 
   output$equation <-renderText({
     #Update only on simulate
     input$makepop
-    isolate(paste0("y = ", input$b0, " + ", input$b1, "x + ", input$sigma))
+    isolate(paste0("y = ", input$b0, " + ", input$b1, "x + epsilon"))
     })
-  
+}) 
   # Generate x's
 
   x <- eventReactive(input$makepop, {
@@ -122,9 +122,12 @@ server <- function(input, output){
      geom_point(data = points(), aes(x= x, y = y, colour = "red", size = 5)) +
      geom_abline(slope = model.points$coefficients[2],
                  intercept = model.points$coefficients[1], colour = "red",
-                 size = 2) )
+                 size = 2) ) +
+      ggtitle("Population with Sampled Points") +
+      theme(legend.position = "none")  
   })
-  
+
+    
   # Find new slope on timer
   newSlope <- reactive({
     timer()
@@ -141,7 +144,10 @@ server <- function(input, output){
     timer()
     currentSlope <- isolate({newSlope()})
     totalSlopes <<- c(totalSlopes, currentSlope)
-    hist(totalSlopes)
+    ggplot(data = data.frame(slopes = totalSlopes), aes(x=totalSlopes)) +
+      geom_histogram(bins = 10, fill = "white", col = "black") +
+      ggtitle("Sampling Distribution of beta1hat")
+      #ggtitle(TeX("Sampling Distribution of $\\hat{\\beta}$"))
   })
     
 }

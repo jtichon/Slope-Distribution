@@ -1,0 +1,24 @@
+body {
+    background-color: pink;
+}
+
+.equation {
+    text-align: center;
+    font-weight: bold;
+    font-size: large;
+    color: red;
+    padding: 1cm;
+
+}
+
+.button {
+    padding: 0.5cm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#makepop {
+    background-color: rgb(250, 216, 221);
+    font-size: medium;
+}
