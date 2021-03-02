@@ -1,7 +1,7 @@
 library(shiny)
 library(tidyverse)
 
-slopes <-c()
+ #totalSlopes <-c()
 
 ui <- fluidPage(
   
@@ -44,32 +44,21 @@ ui <- fluidPage(
     
     ),
   
+  # # Big Simulate Button
+  # 
+  # actionButton("sample", "Simulate Samples"),
+  
   # Histogram Picture
-  sidebarLayout( 
+ 
+  fluidPage(
     
-    sidebarPanel(
-      
-      verticalLayout(
-        
-        actionButton("sample1", "1 Sample"),
-        actionButton("sample10", "10 Samples"),
-        actionButton("sample50", "50 Samples"),
-        actionButton("clear", "Clear")
-        
-      )
-
-    ),
+    column(6, 
+           plotOutput("sampleSlopes")),
     
-    mainPanel(
-      
-      #Equation of least-squares line
-      plotOutput("slopePlot"),
-      textOutput("check")
-      
-    ) 
+    column(6,
+           plotOutput("slopesDistrn"))
     
   )
-    
 
 )
 
@@ -84,18 +73,18 @@ server <- function(input, output){
   
   # Generate x's
 
-  x <- reactive({
+  x <- eventReactive(input$makepop, {
     runif(1000,0,10)
   })
 
 
   # Generate y's
-  y <- reactive({
+  y <- eventReactive(input$makepop, {
     input$b0 + input$b1*x() + rnorm(1000, 0, input$sigma)
   })
 
   # Make grid of points
-  grid.0<- reactive({
+  grid.0<- eventReactive(input$makepop, {
     data.frame(x = x(), y = y())
   })
   
@@ -107,60 +96,54 @@ server <- function(input, output){
       geom_point())
   })
   
-  # data.frame(dat=sapply(1:1000, function(i) mean(rexp(input$n,10))))
-  slopes <- reactive({
   
-      data.frame(slopes=sapply(1:1000, function(i){pick <- sample(1:1000, size = 10, replace = FALSE)
-                               points <- grid.0()[pick,]
-                               lm(points$y~points$x)$coefficients[2]}))
+  # Timer for simulating points
+  timer <- reactiveTimer(500)
+  
+  # On a timer, select the points for the simulation one at a time
+  points <- reactive({
+    timer()
+    # data.frame(points = sapply(1:1000, function(i){
+    #   pick <- sample(1:1000, size = 10, replace = FALSE)}))
+    pick <- sample(1:1000, size = 10, replace = FALSE)
+    grid.0()[pick,]
   })
   
-  output$slopePlot <- renderPlot({
-  input$sample10
-   isolate(hist(slopes()$slopes))
+  
+  output$sampleSlopes <- renderPlot({
+
+    # Create model for sample points
+    model.points <- lm(points()$y~points()$x)
+
+    # Update underlay only on simulate, add layer for selected points in red
+    input$makepop
+    isolate(ggplot(grid.0(), aes(x = x, y = y)) +
+             geom_point() +
+     geom_point(data = points(), aes(x= x, y = y, colour = "red", size = 5)) +
+     geom_abline(slope = model.points$coefficients[2],
+                 intercept = model.points$coefficients[1], colour = "red",
+                 size = 2) )
   })
   
-  # output$check <- renderText({
-  #   paste0("slopes =", output$slopes)
-  # })
-  
-##### FOR FUTURE FIXES WITH MULTIPLE PRESSES  
-  
-  # Create samples of slopes for each press of sample
-  
-  # # Intialize slopes vector
-  # slopes <- reactiveValues(data=NULL)
+  # Find new slope on timer
+  newSlope <- reactive({
+    timer()
+    model.points <- lm(points()$y~points()$x)
+    model.points$coefficients[2]
+  })
+
+  observeEvent(input$makepop, {
+    totalSlopes <<- c()
+  })
+
+  # Create plot of slopes by adding new slope to previous slopes
+  output$slopesDistrn <- renderPlot({
+    timer()
+    currentSlope <- isolate({newSlope()})
+    totalSlopes <<- c(totalSlopes, currentSlope)
+    hist(totalSlopes)
+  })
     
-    # If sample1 is clicked, generate one slope to add
-    # newSlope<-reactive({
-    # 
-    #   input$sample1
-    #   pick <- sample(1:1000, size = 10, replace = FALSE)
-    #   points <- grid.0()[pick,]
-    #   lm(points$y~points$x)$coefficients[2]
-    #   #slopes <- c(slopes, newSlope)
-    #   
-    #   })
-    # 
-    # 
-    # slopes <- reactive({
-    #   input$sample1
-    #   isolate({
-    #     slopes <<- append(slopes, newSlope())
-    #   })
-    # })
-    # 
-    # output$check <-renderText({
-    #   input$sample1
-    #   isolate(paste0("New Slope =", newSlope(), "Slopes =", slopes()))
-    # })
-    
-    
-    # output$slopePlot <- renderPlot({
-    #   req(slopes)
-    #   ggplot(data = slopes, aes(x=slopes))+
-    #     geom_hist()
-    # })
 }
 
 shinyApp(ui = ui, server = server)
