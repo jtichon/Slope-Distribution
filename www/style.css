@@ -6,7 +6,7 @@ body {
     text-align: center;
     font-weight: bold;
     font-size: large;
-    color: red;
+    color: rgb(80, 6, 67);
     padding: 1cm;
 
 }
@@ -19,6 +19,25 @@ body {
 }
 
 #makepop {
-    background-color: rgb(250, 216, 221);
+    background-color: rgb(250, 204, 240);
     font-size: medium;
+    font-weight: bold;
+    border-width: 3px;
+    border-color: black;
 }
+
+#parameters {
+    border-width: 3 px;
+    border-color: black;
+}
+
+#b1, #b0, #sigma {
+    font-size: large;
+    border-width: 3 px;
+    border-color: black;
+}
+
+label {
+    font-size: large;
+}
+
