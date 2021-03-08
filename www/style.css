@@ -1,5 +1,5 @@
 body {
-    background-color: pink;
+    background-color: rgb(250, 218, 223);
 }
 
 .equation {
@@ -22,22 +22,28 @@ body {
     background-color: rgb(250, 204, 240);
     font-size: medium;
     font-weight: bold;
-    border-width: 3px;
+    border-width: 2px;
     border-color: black;
 }
 
-#parameters {
-    border-width: 3 px;
-    border-color: black;
-}
 
 #b1, #b0, #sigma {
     font-size: large;
-    border-width: 3 px;
+    border-width: 2px;
     border-color: black;
 }
 
 label {
     font-size: large;
+}
+
+.plots { 
+    border-color: black;
+    border-width: 2px;
+}
+
+#sampleSlopes {
+    border-color: black;
+    border-width: 3px;
 }
 

@@ -51,7 +51,7 @@ tags$div(class = "equation",
   fluidPage(
     
     column(6, 
-           plotOutput("sampleSlopes")),
+          plotOutput("sampleSlopes")),
     
     column(6,
            plotOutput("slopesDistrn"))
@@ -119,12 +119,19 @@ observeEvent(input$makepop, {
     input$makepop
     isolate(ggplot(grid.0(), aes(x = x, y = y)) +
              geom_point() +
-     geom_point(data = points(), aes(x= x, y = y, colour = "red", size = 5)) +
+     geom_point(data = points(), aes(x= x, y = y, colour = "hotpink", size = 5)) +
      geom_abline(slope = model.points$coefficients[2],
-                 intercept = model.points$coefficients[1], colour = "red",
+                 intercept = model.points$coefficients[1], colour = "hotpink",
                  size = 2) ) +
       ggtitle("Population with Sampled Points") +
-      theme(legend.position = "none")  
+      theme(
+        legend.position = "none",
+        plot.title = element_text(size = 20, face = "bold"),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12)
+      )
   })
 
     
@@ -146,8 +153,19 @@ observeEvent(input$makepop, {
     totalSlopes <<- c(totalSlopes, currentSlope)
     ggplot(data = data.frame(slopes = totalSlopes), aes(x=totalSlopes)) +
       geom_histogram(bins = 10, fill = "white", col = "black") +
-      ggtitle("Sampling Distribution of beta1hat")
-      #ggtitle(TeX("Sampling Distribution of $\\hat{\\beta}$"))
+      ggtitle("Sampling Distribution of the Slope") +
+      #ggtitle("Sampling Distribution of beta1hat") +
+      #xlab(TeX("$\\hat{\\beta}$")) +
+      xlab("Slope") +
+      theme(
+        plot.title = element_text(size = 20, face = "bold"),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12)
+      )
+
+      #ggtitle(TeX("Sampling Distribution of $\\hat{\\beta_1}$"))
   })
     
 }
